@@ -30,10 +30,10 @@ export function StatCard({
         className="absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-40"
         style={{ background: accent }}
       />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-white/55">{label}</p>
-          <p className="mt-2 text-[1.7rem] font-bold leading-none tracking-tight">
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-white/55 sm:text-sm">{label}</p>
+          <p className="mt-2 text-[1.35rem] font-bold leading-tight tracking-tight tabular-nums sm:text-[1.7rem]">
             <CountUp
               value={value}
               format={(n) =>
@@ -46,7 +46,7 @@ export function StatCard({
           {sub && <p className="mt-2 text-xs text-white/45">{sub}</p>}
         </div>
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-xl"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11"
           style={{ background: `${accent}22`, color: accent }}
         >
           {icon}

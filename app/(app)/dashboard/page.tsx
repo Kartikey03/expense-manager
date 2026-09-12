@@ -134,7 +134,7 @@ function Header({
       <select
         value={month}
         onChange={(e) => setMonth(e.target.value)}
-        className="glass-input w-auto max-w-[200px]"
+        className="glass-input w-full sm:w-48"
       >
         <option value="all">All time</option>
         {months.map((m) => (

@@ -61,12 +61,12 @@ export default function TransactionsPage() {
       {/* Filters */}
       <GlassCard className="p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="flex flex-wrap gap-1 rounded-xl bg-white/5 p-1">
+          <div className="flex shrink-0 flex-wrap gap-1 rounded-xl bg-white/5 p-1">
             {TYPE_FILTERS.map((f) => (
               <button
                 key={f}
                 onClick={() => setType(f)}
-                className="relative rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors"
+                className="relative flex-1 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors lg:flex-none"
               >
                 {type === f && (
                   <motion.div
@@ -82,7 +82,7 @@ export default function TransactionsPage() {
             ))}
           </div>
 
-          <div className="relative flex-1">
+          <div className="relative w-full min-w-0 lg:flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
             <input
               className="glass-input pl-9"
@@ -92,7 +92,7 @@ export default function TransactionsPage() {
             />
           </div>
 
-          <select value={month} onChange={(e) => setMonth(e.target.value)} className="glass-input w-auto">
+          <select value={month} onChange={(e) => setMonth(e.target.value)} className="glass-input w-full shrink-0 lg:w-44">
             <option value="all">All months</option>
             {months.map((m) => (
               <option key={m} value={m}>

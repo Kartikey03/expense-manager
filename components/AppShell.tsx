@@ -155,15 +155,15 @@ export function AppShell({
           </main>
 
           {/* Mobile bottom nav */}
-          <nav className="glass fixed bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-2xl px-2 py-2 md:hidden">
+          <nav className="glass fixed bottom-3 left-1/2 z-40 flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-0.5 rounded-2xl px-1.5 py-1.5 md:hidden">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = pathname === href;
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex flex-col items-center rounded-xl px-4 py-1.5 text-[10px] ${
-                    active ? "text-brand-300" : "text-white/55"
+                  className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] transition-colors ${
+                    active ? "bg-white/10 text-brand-300" : "text-white/55"
                   }`}
                 >
                   <Icon className="h-5 w-5" />
