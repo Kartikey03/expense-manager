@@ -70,7 +70,10 @@ body {
   mask-image: radial-gradient(circle at 50% 40%, black, transparent 80%);
 }
 
-/* ---------- Glass primitives ---------- */
+/* ---------- Glass primitives ----------
+   Wrapped in @layer components so Tailwind utility classes
+   (padding, width, etc.) always win over these base styles. */
+@layer components {
 .glass {
   background: linear-gradient(
     135deg,
@@ -147,6 +150,8 @@ select.glass-input option {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.25);
 }
+}
+/* end @layer components */
 
 /* Scrollbar */
 ::-webkit-scrollbar {
