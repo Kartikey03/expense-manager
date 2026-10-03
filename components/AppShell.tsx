@@ -2,42 +2,50 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
+  useEffect,
+  useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
   ArrowLeftRight,
-  TrendingUp,
-  Plus,
+  ChartPie,
+  Download,
+  LayoutGrid,
   LogOut,
-  Sparkles,
+  Plus,
   Settings,
+  Wallet,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { TransactionsProvider } from "./TransactionsProvider";
-import { TransactionModal } from "./TransactionModal";
 import type { Transaction } from "@/lib/types";
+import { TransactionsProvider } from "./TransactionsProvider";
+import { TransactionSheet } from "./TransactionSheet";
+import { ExportSheet } from "./ExportSheet";
 
 interface UICtx {
+  email: string;
   openAdd: () => void;
   openEdit: (t: Transaction) => void;
+  openExport: () => void;
+  signOut: () => Promise<void>;
 }
 const UIContext = createContext<UICtx | null>(null);
 export function useUI() {
   const c = useContext(UIContext);
-  if (!c) throw new Error("useUI outside provider");
+  if (!c) throw new Error("useUI must be used within AppShell");
   return c;
 }
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutGrid },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { href: "/investments", label: "Investments", icon: TrendingUp },
+  { href: "/investments", label: "Investments", icon: ChartPie },
 ];
 
 export function AppShell({
@@ -51,141 +59,184 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [sheet, setSheet] = useState<null | "txn" | "export">(null);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
-  function openAdd() {
+  const openAdd = useCallback(() => {
     setEditing(null);
-    setModalOpen(true);
-  }
-  function openEdit(t: Transaction) {
+    setSheet("txn");
+  }, []);
+  const openEdit = useCallback((t: Transaction) => {
     setEditing(t);
-    setModalOpen(true);
-  }
+    setSheet("txn");
+  }, []);
+  const openExport = useCallback(() => setSheet("export"), []);
+  const closeSheet = useCallback(() => setSheet(null), []);
 
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-  }
+  const signOut = useCallback(async () => {
+    await createClient().auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }, [router]);
+
+  const ui = useMemo(
+    () => ({ email, openAdd, openEdit, openExport, signOut }),
+    [email, openAdd, openEdit, openExport, signOut]
+  );
 
   return (
     <TransactionsProvider userId={userId}>
-      <UIContext.Provider value={{ openAdd, openEdit }}>
-        <div className="flex min-h-screen">
-          {/* Sidebar (desktop) */}
-          <aside className="sticky top-0 hidden h-screen w-64 flex-col gap-2 p-4 md:flex">
-            <div className="glass mb-2 flex items-center gap-3 rounded-2xl p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-violet">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold leading-tight">Expense</p>
-                <p className="text-xs text-white/45">Manager</p>
-              </div>
-            </div>
-
-            <nav className="glass flex flex-1 flex-col gap-1 rounded-2xl p-3">
-              {NAV.map(({ href, label, icon: Icon }) => {
+      <UIContext.Provider value={ui}>
+        {/* Desktop: translucent top bar, Apple.com style */}
+        <header className="sticky top-0 z-40 hidden border-b border-hairline bg-black/75 backdrop-blur-xl backdrop-saturate-150 md:block">
+          <div className="mx-auto flex h-[52px] max-w-[1080px] items-center gap-6 px-6">
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-sys-blue">
+                <Wallet className="h-4 w-4 text-white" strokeWidth={2.25} />
+              </span>
+              <span className="text-[15px] font-semibold tracking-[-0.01em]">Expense Manager</span>
+            </Link>
+            <nav className="flex items-center gap-1">
+              {NAV.map(({ href, label }) => {
                 const active = pathname === href;
                 return (
                   <Link
                     key={href}
                     href={href}
-                    className="relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:text-white"
+                    aria-current={active ? "page" : undefined}
+                    className={`rounded-full px-3 py-1.5 text-[14px] transition-colors ${
+                      active ? "bg-surface-2 text-label" : "text-label-2 hover:text-label"
+                    }`}
                   >
-                    {active && (
-                      <motion.div
-                        layoutId="navactive"
-                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-brand-500/30 to-accent-violet/20 ring-1 ring-brand-400/40"
-                        transition={{ type: "spring", stiffness: 360, damping: 30 }}
-                      />
-                    )}
-                    <Icon className="relative z-10 h-[18px] w-[18px]" />
-                    <span className="relative z-10">{label}</span>
+                    {label}
                   </Link>
                 );
               })}
+            </nav>
+            <div className="ml-auto flex items-center gap-3">
+              <button onClick={openAdd} className="btn-primary h-8 px-3.5 text-[13px]">
+                <Plus className="h-4 w-4" strokeWidth={2.5} />
+                Add
+              </button>
+              <AccountMenu email={email} />
+            </div>
+          </div>
+        </header>
 
+        <main className="mx-auto w-full max-w-[1080px] px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] sm:px-6 md:pb-20 md:pt-10">
+          <div key={pathname} className="enter">
+            {children}
+          </div>
+        </main>
+
+        {/* Mobile: iOS tab bar */}
+        <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-[rgba(22,22,23,0.88)] backdrop-blur-xl backdrop-saturate-150 md:hidden">
+          <div className="mx-auto grid h-14 max-w-md grid-cols-5 items-center">
+            <TabLink {...NAV[0]} active={pathname === NAV[0].href} />
+            <TabLink {...NAV[1]} active={pathname === NAV[1].href} />
+            <div className="flex justify-center">
               <button
                 onClick={openAdd}
-                className="btn-primary mt-2 flex items-center justify-center gap-2"
+                aria-label="Add transaction"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white transition-opacity active:opacity-75"
               >
-                <Plus className="h-4 w-4" /> Add transaction
-              </button>
-
-              <div className="flex-1" />
-
-              <div className="rounded-xl border border-white/10 p-3">
-                <p className="truncate text-xs text-white/50">{email}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-2 text-xs text-white/60 transition-colors hover:text-white"
-                  >
-                    <Settings className="h-4 w-4" /> Settings
-                  </Link>
-                  <button
-                    onClick={signOut}
-                    className="flex items-center gap-2 text-xs text-white/60 transition-colors hover:text-accent-red"
-                  >
-                    <LogOut className="h-4 w-4" /> Sign out
-                  </button>
-                </div>
-              </div>
-            </nav>
-          </aside>
-
-          {/* Main */}
-          <main className="flex-1 px-4 pb-28 pt-5 md:px-8 md:pb-10">
-            {/* Mobile top bar */}
-            <div className="mb-4 flex items-center justify-between md:hidden">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-violet">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                <span className="font-semibold">Expense Manager</span>
-              </div>
-              <button onClick={signOut} className="btn-ghost px-2.5 py-1.5">
-                <LogOut className="h-4 w-4" />
+                <Plus className="h-[22px] w-[22px]" strokeWidth={2.5} />
               </button>
             </div>
+            <TabLink {...NAV[2]} active={pathname === NAV[2].href} />
+            <TabLink href="/settings" label="Settings" icon={Settings} active={pathname === "/settings"} />
+          </div>
+        </nav>
 
-            <div className="mx-auto max-w-6xl">{children}</div>
-          </main>
-
-          {/* Mobile bottom nav */}
-          <nav className="glass fixed bottom-3 left-1/2 z-40 flex max-w-[calc(100vw-1.5rem)] -translate-x-1/2 items-center gap-0.5 rounded-2xl px-1.5 py-1.5 md:hidden">
-            {NAV.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] transition-colors ${
-                    active ? "bg-white/10 text-brand-300" : "text-white/55"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  {label}
-                </Link>
-              );
-            })}
-            <button
-              onClick={openAdd}
-              className="ml-1 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-violet text-white"
-            >
-              <Plus className="h-5 w-5" />
-            </button>
-          </nav>
-        </div>
-
-        <TransactionModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          editing={editing}
-        />
+        <TransactionSheet open={sheet === "txn"} onClose={closeSheet} editing={editing} />
+        <ExportSheet open={sheet === "export"} onClose={closeSheet} />
       </UIContext.Provider>
     </TransactionsProvider>
+  );
+}
+
+function TabLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+}: {
+  href: string;
+  label: string;
+  icon: typeof Wallet;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition-colors ${
+        active ? "text-sys-blue" : "text-sys-gray"
+      }`}
+    >
+      <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.25 : 1.9} />
+      {label}
+    </Link>
+  );
+}
+
+function AccountMenu({ email }: { email: string }) {
+  const { openExport, signOut } = useUI();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const item =
+    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[14px] transition-colors hover:bg-white/[0.06]";
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Account"
+        aria-expanded={open}
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-3 text-[13px] font-semibold uppercase text-label transition-opacity hover:opacity-85"
+      >
+        {email.charAt(0) || "?"}
+      </button>
+      {open && (
+        <div className="enter absolute right-0 top-11 w-60 rounded-xl bg-surface-2 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.55)]">
+          <p className="truncate px-2.5 pb-2 pt-1.5 text-[12px] text-label-2">{email}</p>
+          <div className="mb-1 h-px bg-hairline" />
+          <Link href="/settings" className={item}>
+            <Settings className="h-4 w-4 text-label-2" /> Settings
+          </Link>
+          <button
+            onClick={() => {
+              setOpen(false);
+              openExport();
+            }}
+            className={item}
+          >
+            <Download className="h-4 w-4 text-label-2" /> Export CSV
+          </button>
+          <div className="my-1 h-px bg-hairline" />
+          <button onClick={signOut} className={`${item} text-sys-red`}>
+            <LogOut className="h-4 w-4" /> Sign Out
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

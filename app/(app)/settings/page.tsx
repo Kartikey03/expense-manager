@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Loader2, KeyRound, LogOut, ShieldCheck } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { GlassCard } from "@/components/ui/GlassCard";
+import { useState, type ReactNode } from "react";
+import { ChevronRight, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useUI } from "@/components/AppShell";
+import { useTxns } from "@/components/TransactionsProvider";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export default function SettingsPage() {
-  const supabase = createClient();
-  const router = useRouter();
+  const { email, openExport, signOut } = useUI();
+  const { txns, loading } = useTxns();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
@@ -20,68 +20,88 @@ export default function SettingsPage() {
     if (password.length < 6) return toast.error("Use at least 6 characters");
     if (password !== confirm) return toast.error("Passwords don't match");
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await createClient().auth.updateUser({ password });
     setSaving(false);
     if (error) return toast.error(error.message);
     setPassword("");
     setConfirm("");
-    toast.success("Password set — you can now sign in with it ✨");
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    router.push("/login");
+    toast.success("Password saved");
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Settings</h1>
-        <p className="mt-1 text-sm text-white/45">Manage how you sign in.</p>
-      </div>
+    <div className="mx-auto max-w-[640px]">
+      <PageHeader title="Settings" />
 
-      <GlassCard className="max-w-lg p-6">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300">
-            <KeyRound className="h-5 w-5" />
+      <div className="space-y-8">
+        <Group title="Account">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-3 text-[17px] font-semibold uppercase">
+              {email.charAt(0)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[15px]">{email}</p>
+              <p className="text-[13px] text-label-2">Signed in with email</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold">Set a password</h3>
-            <p className="text-xs text-white/45">
-              Optional — so you don't need a magic link every time.
-            </p>
-          </div>
-        </div>
+        </Group>
 
-        <form onSubmit={savePassword} className="space-y-3">
-          <input
-            className="glass-input"
-            type="password"
-            placeholder="New password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            className="glass-input"
-            type="password"
-            placeholder="Confirm password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-          <button disabled={saving} className="btn-primary flex items-center gap-2">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-            Save password
+        <Group title="Password" footer="Optional. Lets you sign in without waiting for a magic link.">
+          <form onSubmit={savePassword} className="space-y-3 p-4">
+            <input
+              className="field bg-surface-3/60"
+              type="password"
+              placeholder="New password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <input
+              className="field bg-surface-3/60"
+              type="password"
+              placeholder="Confirm password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+            <button disabled={saving || !password} className="btn-primary">
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              Save Password
+            </button>
+          </form>
+        </Group>
+
+        <Group title="Data" footer={loading ? "Loading…" : `${txns.length} transactions on record.`}>
+          <button
+            onClick={openExport}
+            className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/[0.04] active:bg-white/[0.07]"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-sys-green">
+              <Download className="h-[17px] w-[17px] text-white" strokeWidth={2.25} />
+            </span>
+            <span className="flex-1 text-[15px]">Export CSV</span>
+            <ChevronRight className="h-4 w-4 text-label-3" />
           </button>
-        </form>
-      </GlassCard>
+        </Group>
 
-      <GlassCard className="max-w-lg p-6">
-        <h3 className="text-sm font-semibold">Session</h3>
-        <p className="mt-1 text-xs text-white/45">Sign out of this device.</p>
-        <button onClick={signOut} className="btn-ghost mt-3 flex items-center gap-2 text-accent-red">
-          <LogOut className="h-4 w-4" /> Sign out
-        </button>
-      </GlassCard>
+        <Group>
+          <button
+            onClick={signOut}
+            className="w-full px-4 py-3.5 text-center text-[15px] text-sys-red transition-colors hover:bg-white/[0.04] active:bg-white/[0.07]"
+          >
+            Sign Out
+          </button>
+        </Group>
+      </div>
     </div>
+  );
+}
+
+function Group({ title, footer, children }: { title?: string; footer?: string; children: ReactNode }) {
+  return (
+    <section>
+      {title && <h2 className="caption mb-2 px-4">{title}</h2>}
+      <div className="card overflow-hidden">{children}</div>
+      {footer && <p className="caption mt-2 px-4">{footer}</p>}
+    </section>
   );
 }

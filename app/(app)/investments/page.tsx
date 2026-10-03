@@ -1,84 +1,69 @@
 "use client";
 
 import { useMemo } from "react";
-import { PiggyBank, ArrowDownCircle, ArrowUpCircle, Layers } from "lucide-react";
+import { ArrowDownToLine, ArrowUpRight, ChartPie, Layers } from "lucide-react";
 import { useTxns } from "@/components/TransactionsProvider";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { StatCard } from "@/components/ui/StatCard";
+import { PageHeader, SectionTitle } from "@/components/ui/PageHeader";
 import { TransactionList } from "@/components/TransactionList";
-import { CategoryDonut } from "@/components/charts/Charts";
+import { Breakdown, Donut } from "@/components/charts/Charts";
 import { investmentPositions } from "@/lib/analytics";
-import { catColor } from "@/lib/categories";
-import { formatINR } from "@/lib/format";
 
 export default function InvestmentsPage() {
   const { txns, loading } = useTxns();
 
   const invest = useMemo(() => txns.filter((t) => t.type === "investment"), [txns]);
-  const contributions = useMemo(
-    () => invest.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0),
-    [invest]
-  );
-  const withdrawals = useMemo(
-    () => invest.filter((t) => t.amount < 0).reduce((a, t) => a + Math.abs(t.amount), 0),
-    [invest]
-  );
-  const net = contributions - withdrawals;
-  const positions = useMemo(() => investmentPositions(invest), [invest]);
+  const putIn = useMemo(() => invest.filter((t) => t.amount > 0), [invest]);
+  const out = useMemo(() => invest.filter((t) => t.amount < 0), [invest]);
+  const contributions = putIn.reduce((a, t) => a + t.amount, 0);
+  const withdrawals = out.reduce((a, t) => a + Math.abs(t.amount), 0);
+  // Donut can't show negative slices — keep instruments with money still in.
+  const positions = useMemo(() => investmentPositions(invest).filter((p) => p.value > 0), [invest]);
+  const positionsTotal = positions.reduce((a, p) => a + p.value, 0);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Investments</h1>
-        <p className="mt-1 text-sm text-white/45">Portfolio contributions, withdrawals & mix.</p>
-      </div>
+    <>
+      <PageHeader title="Investments" subtitle="Contributions, withdrawals and where your money sits." />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Net invested" value={net} accent="#818cf8" delay={0.02}
-          icon={<PiggyBank className="h-5 w-5" />} sub="Contributions − withdrawals" />
-        <StatCard label="Total put in" value={contributions} accent="#34d399" delay={0.06}
-          icon={<ArrowUpCircle className="h-5 w-5" />} sub={`${invest.filter((t) => t.amount > 0).length} buys`} />
-        <StatCard label="Withdrawn" value={withdrawals} accent="#fbbf24" delay={0.1}
-          icon={<ArrowDownCircle className="h-5 w-5" />} sub={`${invest.filter((t) => t.amount < 0).length} exits`} />
-        <StatCard label="Instruments" value={positions.length} accent="#2dd4bf" delay={0.14} raw
-          icon={<Layers className="h-5 w-5" />} sub="Active categories" />
-      </div>
+      {loading ? (
+        <div className="grid animate-pulse grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="card h-[118px]" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <StatCard label="Net invested" value={contributions - withdrawals} icon={ChartPie} color="#0a84ff" sub="Put in − withdrawn" />
+            <StatCard label="Put in" value={contributions} icon={ArrowUpRight} color="#30d158" sub={`${putIn.length} contributions`} />
+            <StatCard label="Withdrawn" value={withdrawals} icon={ArrowDownToLine} color="#ff9f0a" sub={`${out.length} withdrawals`} />
+            <StatCard label="Instruments" value={positions.length} icon={Layers} color="#63e6e2" sub="With money in" raw />
+          </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <GlassCard delay={0.18} className="p-5">
-          <h3 className="mb-3 text-sm font-semibold">Portfolio mix</h3>
-          {positions.length ? (
-            <>
-              <CategoryDonut data={positions} total={positions.reduce((a, p) => a + p.value, 0)} />
-              <div className="mt-3 space-y-1.5">
-                {positions.map((c) => (
-                  <div key={c.category} className="flex items-center gap-2 text-xs">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: catColor(c.category) }} />
-                    <span className="flex-1 text-white/60">{c.category}</span>
-                    <span className="font-medium">{formatINR(c.value)}</span>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <section className="card p-5 sm:p-6 lg:sticky lg:top-[76px] lg:self-start">
+              <SectionTitle title="Allocation" hint="Total contributed per instrument" />
+              {positions.length ? (
+                <>
+                  <Donut data={positions} total={positionsTotal} label="Contributed" />
+                  <div className="mt-6">
+                    <Breakdown data={positions} total={positionsTotal} />
                   </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="py-12 text-center text-sm text-white/40">No investments yet.</p>
-          )}
-        </GlassCard>
+                </>
+              ) : (
+                <p className="py-12 text-center text-[15px] text-label-2">No investments yet.</p>
+              )}
+            </section>
 
-        <GlassCard delay={0.22} className="p-4 sm:p-5 lg:col-span-2">
-          <h3 className="mb-1 text-sm font-semibold">Investment ledger</h3>
-          <p className="mb-2 text-xs text-white/40">Negative = withdrawal.</p>
-          {loading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="skeleton h-14 rounded-xl" />
-              ))}
-            </div>
-          ) : (
-            <TransactionList items={invest} emptyLabel="No investment records." />
-          )}
-        </GlassCard>
-      </div>
-    </div>
+            <section className="card p-5 sm:p-6 lg:col-span-2">
+              <SectionTitle title="Activity" hint="Withdrawals are shown in orange." />
+              <div className="-mx-1 sm:-mx-2">
+                <TransactionList items={invest} emptyLabel="No investment records." />
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
