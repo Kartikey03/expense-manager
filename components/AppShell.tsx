@@ -24,9 +24,10 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Transaction } from "@/lib/types";
-import { TransactionsProvider } from "./TransactionsProvider";
+import { CACHE_KEY, TransactionsProvider } from "./TransactionsProvider";
 import { TransactionSheet } from "./TransactionSheet";
 import { ExportSheet } from "./ExportSheet";
+import { loadCharts } from "./charts/lazy";
 
 interface UICtx {
   email: string;
@@ -48,17 +49,34 @@ const NAV = [
   { href: "/investments", label: "Investments", icon: ChartPie },
 ];
 
-export function AppShell({
-  userId,
-  email,
-  children,
-}: {
-  userId: string;
-  email: string;
-  children: ReactNode;
-}) {
+export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const email = user?.email ?? "";
+
+  // Session is read from the auth cookie on the client (no network round trip),
+  // which is what lets every page under this shell be static.
+  useEffect(() => {
+    const supabase = createClient();
+    const apply = (session: { user: { id: string; email?: string } } | null) => {
+      if (session) setUser({ id: session.user.id, email: session.user.email ?? "" });
+      else router.replace("/login");
+    };
+    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") apply(null);
+      else if (session) apply(session);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router]);
+
+  // Warm the chart library once the browser is idle so Overview/Investments
+  // never wait on it, without competing with the first paint.
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    idle(() => void loadCharts());
+  }, []);
   const [sheet, setSheet] = useState<null | "txn" | "export">(null);
   const [editing, setEditing] = useState<Transaction | null>(null);
 
@@ -74,6 +92,9 @@ export function AppShell({
   const closeSheet = useCallback(() => setSheet(null), []);
 
   const signOut = useCallback(async () => {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch {}
     await createClient().auth.signOut();
     router.replace("/login");
     router.refresh();
@@ -85,7 +106,7 @@ export function AppShell({
   );
 
   return (
-    <TransactionsProvider userId={userId}>
+    <TransactionsProvider uid={user?.id ?? null}>
       <UIContext.Provider value={ui}>
         {/* Desktop: translucent top bar, Apple.com style */}
         <header className="sticky top-0 z-40 hidden border-b border-hairline bg-black/75 backdrop-blur-xl backdrop-saturate-150 md:block">

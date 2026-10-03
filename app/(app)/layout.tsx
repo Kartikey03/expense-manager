@@ -1,22 +1,9 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  return (
-    <AppShell userId={user.id} email={user.email ?? ""}>
-      {children}
-    </AppShell>
-  );
+// Static on purpose: no server-side auth call here, so every page under this
+// layout is prerendered and tab switches are served instantly from the client.
+// Middleware already redirects signed-out visitors, and Row Level Security
+// protects the data itself.
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return <AppShell>{children}</AppShell>;
 }
