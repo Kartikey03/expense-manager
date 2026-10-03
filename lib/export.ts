@@ -58,7 +58,7 @@ export function toCSV(txns: Transaction[]) {
 export function exportFilename(range: RangeKey, type: ExportType) {
   const what = type === "all" ? "transactions" : type === "income" ? "income" : `${type}s`;
   const span = range === "all" ? "all-time" : `last-${range.replace("m", "")}-month${range === "1m" ? "" : "s"}`;
-  return `${what}_${span}_${toISODate(new Date())}.csv`;
+  return `kiwi_${what}_${span}_${toISODate(new Date())}.csv`;
 }
 
 export function downloadCSV(filename: string, csv: string) {

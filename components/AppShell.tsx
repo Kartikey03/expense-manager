@@ -20,7 +20,7 @@ import {
   LogOut,
   Plus,
   Settings,
-  Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Transaction } from "@/lib/types";
@@ -111,11 +111,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Desktop: translucent top bar, Apple.com style */}
         <header className="sticky top-0 z-40 hidden border-b border-hairline bg-black/75 backdrop-blur-xl backdrop-saturate-150 md:block">
           <div className="mx-auto flex h-[52px] max-w-[1080px] items-center gap-6 px-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-sys-blue">
-                <Wallet className="h-4 w-4 text-white" strokeWidth={2.25} />
-              </span>
-              <span className="text-[15px] font-semibold tracking-[-0.01em]">Expense Manager</span>
+            <Link href="/dashboard" className="flex items-center gap-2" aria-label="Kiwi home">
+              <img src="/kiwi-icon.png" alt="" width={28} height={28} className="h-7 w-7 rounded-[7px]" />
+              <span className="text-[17px] font-semibold tracking-[-0.02em]">Kiwi</span>
             </Link>
             <nav className="flex items-center gap-1">
               {NAV.map(({ href, label }) => {
@@ -159,7 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 onClick={openAdd}
                 aria-label="Add transaction"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-white transition-opacity active:opacity-75"
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity active:opacity-75"
               >
                 <Plus className="h-[22px] w-[22px]" strokeWidth={2.5} />
               </button>
@@ -184,7 +182,7 @@ function TabLink({
 }: {
   href: string;
   label: string;
-  icon: typeof Wallet;
+  icon: LucideIcon;
   active: boolean;
 }) {
   return (
@@ -192,7 +190,7 @@ function TabLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition-colors ${
-        active ? "text-sys-blue" : "text-sys-gray"
+        active ? "text-accent-link" : "text-sys-gray"
       }`}
     >
       <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.25 : 1.9} />

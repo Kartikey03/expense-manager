@@ -69,7 +69,7 @@ export function ExportSheet({ open, onClose }: { open: boolean; onClose: () => v
                         <span className="block text-[13px] text-label-2">{describeRange(r.key)}</span>
                       </span>
                       <Check
-                        className={`h-[18px] w-[18px] shrink-0 text-sys-blue transition-opacity ${selected ? "opacity-100" : "opacity-0"}`}
+                        className={`h-[18px] w-[18px] shrink-0 text-accent-link transition-opacity ${selected ? "opacity-100" : "opacity-0"}`}
                         strokeWidth={2.5}
                       />
                     </span>

@@ -21,12 +21,12 @@
   }
 
   :focus-visible {
-    outline: 2px solid #0a84ff;
+    outline: 2px solid #7ccc6a;
     outline-offset: 2px;
   }
 
   ::selection {
-    background: rgba(10, 132, 255, 0.45);
+    background: rgba(124, 204, 106, 0.4);
   }
 
   /* Hide number spinners */
@@ -51,8 +51,8 @@
     @apply h-11 w-full rounded-xl border border-transparent bg-surface-2 px-3.5 text-[16px] text-label outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-label-3 sm:text-[15px];
   }
   .field:focus {
-    border-color: #0a84ff;
-    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.28);
+    border-color: #7ccc6a;
+    box-shadow: 0 0 0 3px rgba(124, 204, 106, 0.25);
   }
   .select {
     @apply field cursor-pointer appearance-none bg-no-repeat pr-9;
@@ -69,7 +69,7 @@
     @apply inline-flex h-9 select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[14px] font-medium transition-[background-color,opacity,color] duration-150 active:opacity-75 disabled:pointer-events-none disabled:opacity-40;
   }
   .btn-primary {
-    @apply btn bg-accent text-white hover:bg-accent-hover;
+    @apply btn bg-accent font-semibold text-accent-ink hover:bg-accent-hover;
   }
   .btn-secondary {
     @apply btn bg-surface-2 text-label hover:bg-surface-3;

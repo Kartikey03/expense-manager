@@ -1,7 +1,8 @@
 import type { Config } from "tailwindcss";
 
 // Apple dark-mode palette: true black canvas, iOS system grays for surfaces,
-// and iOS dark "system colors" for data. No gradients anywhere.
+// iOS dark "system colors" for data, and Kiwi green as the brand accent.
+// No gradients anywhere.
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -36,10 +37,13 @@ const config: Config = {
           3: "#6e6e73",
         },
         hairline: "rgba(255,255,255,0.08)",
+        // Kiwi brand green, sampled from the app icon's leaf.
+        // Dark text on it (8.8:1); lighter tint for links/active states (12:1 on black).
         accent: {
-          DEFAULT: "#0071e3",
-          hover: "#0077ed",
-          link: "#2997ff",
+          DEFAULT: "#7ccc6a",
+          hover: "#8ad677",
+          link: "#8fd67a",
+          ink: "#06200f",
         },
         sys: {
           blue: "#0a84ff",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Mail, Wallet } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Segmented } from "@/components/ui/Segmented";
 
@@ -42,17 +42,21 @@ export default function LoginPage() {
     <main className="flex min-h-[100dvh] items-center justify-center px-5 py-12">
       <div className="enter w-full max-w-[380px]">
         <div className="mb-8 text-center">
-          <span className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-sys-blue">
-            <Wallet className="h-7 w-7 text-white" strokeWidth={2} />
-          </span>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em]">Expense Manager</h1>
+          <img
+            src="/kiwi-icon.png"
+            alt=""
+            width={72}
+            height={72}
+            className="mx-auto mb-5 h-[72px] w-[72px] rounded-[17px] shadow-[0_12px_40px_rgba(124,204,106,0.18)]"
+          />
+          <h1 className="text-[34px] font-semibold leading-tight tracking-[-0.025em]">Kiwi</h1>
           <p className="mt-1.5 text-[15px] text-label-2">Sign in to see where your money stands.</p>
         </div>
 
         {sent ? (
           <div className="card px-6 py-8 text-center">
-            <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-sys-blue/15">
-              <Mail className="h-5 w-5 text-sys-blue" />
+            <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-accent/15">
+              <Mail className="h-5 w-5 text-accent-link" />
             </span>
             <p className="text-[17px] font-semibold">Check your email</p>
             <p className="caption mt-1.5">
