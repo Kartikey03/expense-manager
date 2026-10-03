@@ -8,9 +8,13 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Expense Manager",
-  description: "Personal income, expense & investment tracker",
+  title: { default: "Kiwi", template: "%s · Kiwi" },
+  description: "Kiwi — track your income, expenses and investments.",
+  applicationName: "Kiwi",
+  appleWebApp: { capable: true, title: "Kiwi", statusBarStyle: "black-translucent" },
 };
+// Icons come from app/icon.png, app/favicon.ico and app/apple-icon.png
+// (Next.js file conventions); the PWA manifest is app/manifest.ts.
 
 export const viewport: Viewport = {
   themeColor: "#000000",
