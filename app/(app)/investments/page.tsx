@@ -6,7 +6,8 @@ import { useTxns } from "@/components/TransactionsProvider";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader, SectionTitle } from "@/components/ui/PageHeader";
 import { TransactionList } from "@/components/TransactionList";
-import { Breakdown, Donut } from "@/components/charts/Charts";
+import { Breakdown } from "@/components/charts/parts";
+import { Donut } from "@/components/charts/lazy";
 import { investmentPositions } from "@/lib/analytics";
 
 export default function InvestmentsPage() {

@@ -18,10 +18,10 @@ import {
 import { formatINR, monthLabel } from "@/lib/format";
 import { catColor } from "@/lib/categories";
 import type { CatSlice, MonthlyRow } from "@/lib/analytics";
+import { SERIES } from "./parts";
 
 const AXIS = { fill: "#86868b", fontSize: 12 };
 const GRID = "rgba(255,255,255,0.07)";
-export const SERIES = { income: "#30d158", expense: "#ff453a", investment: "#0a84ff" };
 
 /**
  * Charts animate on first paint only. Re-animating whenever data changes
@@ -52,19 +52,6 @@ function ChartTooltip({ active, payload, label }: any) {
   );
 }
 
-export function Legend({ items }: { items: { label: string; color: string }[] }) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-      {items.map((i) => (
-        <span key={i.label} className="flex items-center gap-1.5 text-[12px] text-label-2">
-          <span className="h-2 w-2 rounded-full" style={{ background: i.color }} />
-          {i.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function MonthlyBars({ data, height = 260 }: { data: MonthlyRow[]; height?: number | `${number}%` }) {
   const animate = useIntroAnimation();
   return (
@@ -74,9 +61,9 @@ export function MonthlyBars({ data, height = 260 }: { data: MonthlyRow[]; height
         <XAxis dataKey="key" tickFormatter={(k) => monthLabel(k).split(" ")[0]} tick={AXIS} axisLine={false} tickLine={false} />
         <YAxis tickFormatter={(v) => formatINR(v, { compact: true })} tick={AXIS} axisLine={false} tickLine={false} width={52} />
         <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-        <Bar dataKey="income" name="Income" fill={SERIES.income} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={600} />
-        <Bar dataKey="expense" name="Expenses" fill={SERIES.expense} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={600} />
-        <Bar dataKey="investment" name="Invested" fill={SERIES.investment} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={600} />
+        <Bar dataKey="income" name="Income" fill={SERIES.income} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={450} />
+        <Bar dataKey="expense" name="Expenses" fill={SERIES.expense} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={450} />
+        <Bar dataKey="investment" name="Invested" fill={SERIES.investment} radius={[4, 4, 0, 0]} maxBarSize={14} isAnimationActive={animate} animationDuration={450} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -100,7 +87,7 @@ export function BalanceArea({ data, height = 220 }: { data: { key: string; balan
           fill={SERIES.investment}
           fillOpacity={0.12}
           isAnimationActive={animate}
-          animationDuration={600}
+          animationDuration={450}
         />
       </AreaChart>
     </ResponsiveContainer>
@@ -123,7 +110,7 @@ export function Donut({ data, total, label = "Total" }: { data: CatSlice[]; tota
             cornerRadius={3}
             stroke="none"
             isAnimationActive={animate}
-            animationDuration={600}
+            animationDuration={450}
           >
             {data.map((d) => (
               <Cell key={d.category} fill={catColor(d.category)} />
@@ -136,47 +123,5 @@ export function Donut({ data, total, label = "Total" }: { data: CatSlice[]; tota
         <span className="tabular text-[20px] font-semibold tracking-[-0.02em]">{formatINR(total, { compact: true })}</span>
       </div>
     </div>
-  );
-}
-
-/**
- * Lets a chart fill whatever height its card is given by the grid row, without
- * contributing to that height itself (absolute child → no resize feedback loop).
- */
-export function ChartFill({ min = 240, children }: { min?: number; children: React.ReactNode }) {
-  return (
-    <div className="relative flex-1" style={{ minHeight: min }}>
-      <div className="absolute inset-0">{children}</div>
-    </div>
-  );
-}
-
-/** Screen Time–style ranked list with proportional bars. */
-export function Breakdown({ data, total, limit }: { data: CatSlice[]; total: number; limit?: number }) {
-  const rows = limit ? data.slice(0, limit) : data;
-  const max = Math.max(...data.map((d) => d.value), 1);
-  return (
-    <ul className="space-y-3">
-      {rows.map((d) => {
-        const pct = total > 0 ? (d.value / total) * 100 : 0;
-        return (
-          <li key={d.category}>
-            <div className="flex items-baseline justify-between gap-3 text-[14px]">
-              <span className="truncate">{d.category}</span>
-              <span className="tabular shrink-0">
-                {formatINR(d.value)}
-                <span className="ml-2 inline-block w-9 text-right text-[12px] text-label-2">{pct.toFixed(0)}%</span>
-              </span>
-            </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${Math.max(2, (d.value / max) * 100)}%`, background: catColor(d.category) }}
-              />
-            </div>
-          </li>
-        );
-      })}
-    </ul>
   );
 }

@@ -9,14 +9,16 @@ import { useEffect, useRef } from "react";
 export function CountUp({
   value,
   format,
-  duration = 600,
+  duration = 500,
 }: {
   value: number;
   format: (n: number) => string;
   duration?: number;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const from = useRef(0);
+  // Start at the real value: numbers appear instantly when you open a page and
+  // only animate when the value actually changes (e.g. after adding something).
+  const from = useRef(value);
   const fmt = useRef(format);
   fmt.current = format;
 

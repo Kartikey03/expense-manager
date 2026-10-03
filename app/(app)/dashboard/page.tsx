@@ -8,7 +8,8 @@ import { useUI } from "@/components/AppShell";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageHeader, SectionTitle } from "@/components/ui/PageHeader";
 import { TransactionList } from "@/components/TransactionList";
-import { BalanceArea, Breakdown, ChartFill, Donut, Legend, MonthlyBars, SERIES } from "@/components/charts/Charts";
+import { Breakdown, ChartFill, Legend, SERIES } from "@/components/charts/parts";
+import { BalanceArea, Donut, MonthlyBars } from "@/components/charts/lazy";
 import { availableMonths, byCategory, cumulativeBalance, monthlySeries, totals } from "@/lib/analytics";
 import { monthKey, monthLabel, monthTitle } from "@/lib/format";
 
