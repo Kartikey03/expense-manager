@@ -22,12 +22,14 @@ export function PageHeader({
 
 export function SectionTitle({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-3">
+    <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2">
       <div className="min-w-0">
         <h2 className="text-[17px] font-semibold tracking-[-0.01em]">{title}</h2>
         {hint && <p className="caption mt-0.5">{hint}</p>}
       </div>
-      {action}
+      {/* shrink-0: on narrow screens the action (e.g. a legend) wraps below
+          the title instead of squeezing it. */}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
