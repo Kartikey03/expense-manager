@@ -4,7 +4,7 @@
 
 Kiwi is a personal finance app to track **income, expenses, and investments** — built for one user (you), with an Apple-style dark UI and a live Supabase backend. All 2026 data from the original Google Sheet is already loaded.
 
-Live: https://expense-manager-og.vercel.app
+Live: **https://kiwi-money.vercel.app** (the old https://expense-manager-og.vercel.app still works)
 
 ![stack](https://img.shields.io/badge/Next.js-14-black) ![stack](https://img.shields.io/badge/Supabase-Postgres-3ECF8E) ![stack](https://img.shields.io/badge/Tailwind-3-38BDF8)
 
@@ -67,6 +67,21 @@ Sign in with the **Magic Link** tab using your email; open the link on the same 
 5. In **Supabase → Authentication → URL Configuration**, set **Site URL** to your Vercel URL and ensure it's in the redirect allow-list (the wildcard `https://*.vercel.app/**` is already added).
 
 > Tip: the CLI path is `npm i -g vercel && vercel` then `vercel --prod`.
+
+## ✉️ Branded sign-in emails
+
+Kiwi-branded templates for every auth email (sign-in link, confirm, reset, verification code, change notices) live in [`scripts/email_templates.py`](scripts/email_templates.py).
+
+Supabase's free tier only allows custom templates with a **custom SMTP provider**:
+
+1. Supabase Dashboard → **Authentication → Emails → SMTP Settings** → enable custom SMTP (e.g. Gmail with an App Password, Resend, Brevo). Set **Sender name** to `Kiwi`.
+2. Apply the templates:
+
+```bash
+SUPABASE_ACCESS_TOKEN=sbp_... python3 scripts/email_templates.py --apply
+```
+
+Preview them locally with `python3 scripts/email_templates.py --preview /tmp/kiwi-emails`.
 
 ## 🔁 Re-seeding / importing more data
 
