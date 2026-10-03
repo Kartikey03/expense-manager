@@ -1,20 +1,26 @@
-# 💸 Expense Manager
+<img src="public/kiwi-icon.png" width="72" alt="Kiwi icon" />
 
-A personal finance dashboard to track **income, expenses, and investments** — built for one user (you), with a glassmorphism UI, smooth animations, and a live Supabase backend. All 2026 data from the original Google Sheet is already loaded.
+# Kiwi
+
+Kiwi is a personal finance app to track **income, expenses, and investments** — built for one user (you), with an Apple-style dark UI and a live Supabase backend. All 2026 data from the original Google Sheet is already loaded.
+
+Live: https://expense-manager-og.vercel.app
 
 ![stack](https://img.shields.io/badge/Next.js-14-black) ![stack](https://img.shields.io/badge/Supabase-Postgres-3ECF8E) ![stack](https://img.shields.io/badge/Tailwind-3-38BDF8)
 
 ## ✨ Features
 
 - **Dashboard** — income / expense / net-investment / free-balance KPIs (animated count-ups), monthly flow bar chart, spending-mix donut, cumulative-balance area chart, recent activity. Filter by month or all-time.
-- **Transactions** — searchable, filterable ledger (by type, month, text). Add / edit / delete from a single glass modal.
+- **Transactions** — searchable, filterable ledger (by type, month, text). Add / edit / delete from one sheet (bottom sheet on mobile).
 - **Investments** — net invested, contributions vs withdrawals, portfolio mix by instrument, full investment ledger (withdrawals shown as negative).
 - **Auth** — passwordless magic-link sign-in + optional password (set from Settings). Row-level security so data is private to your account.
-- **Glassmorphism** everywhere, animated aurora background, Framer Motion transitions, fully responsive (desktop sidebar + mobile bottom nav).
+- **Apple dark-mode design** in Kiwi green, fully responsive (translucent top bar on desktop, iOS tab bar on mobile), installable to the home screen.
+- **CSV export** for the last 1/2/3 months or everything.
+- **Fast:** app pages are prerendered, sessions are verified locally, writes are optimistic, and data is cached on-device.
 
 ## 🧱 Tech stack
 
-Next.js 14 (App Router) · React 18 · TypeScript · Tailwind CSS · Supabase (Postgres + Auth + RLS) · Framer Motion · Recharts · Sonner · deploy on Vercel.
+Next.js 14 (App Router) · React 18 · TypeScript · Tailwind CSS · Supabase (Postgres + Auth + RLS) · Recharts · Sonner · deploy on Vercel.
 
 ## 🗂️ Data model
 
