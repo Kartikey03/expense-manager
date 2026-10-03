@@ -1,29 +1,54 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { animate } from "framer-motion";
+import { useEffect, useRef } from "react";
 
+/**
+ * Animates a number by writing straight to the DOM node each frame —
+ * no React re-render per frame, so it can't cause layout work elsewhere.
+ */
 export function CountUp({
   value,
   format,
-  duration = 1.1,
+  duration = 600,
 }: {
   value: number;
   format: (n: number) => string;
   duration?: number;
 }) {
-  const [display, setDisplay] = useState(0);
-  const prev = useRef(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const from = useRef(0);
+  const fmt = useRef(format);
+  fmt.current = format;
 
   useEffect(() => {
-    const controls = animate(prev.current, value, {
-      duration,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => setDisplay(v),
-    });
-    prev.current = value;
-    return () => controls.stop();
+    const el = ref.current;
+    if (!el) return;
+    // Update React's own text node in place so React stays in sync.
+    const write = (v: number) => {
+      const s = fmt.current(v);
+      if (el.firstChild) el.firstChild.nodeValue = s;
+      else el.textContent = s;
+    };
+    const start = from.current;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || start === value) {
+      write(value);
+      from.current = value;
+      return;
+    }
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = start + (value - start) * eased;
+      write(v);
+      from.current = v;
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [value, duration]);
 
-  return <>{format(display)}</>;
+  return <span ref={ref}>{format(from.current)}</span>;
 }

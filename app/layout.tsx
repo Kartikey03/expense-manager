@@ -1,38 +1,40 @@
 import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import "./globals.css";
+
+// Apple devices render SF Pro via -apple-system; Inter is the closest
+// fallback everywhere else (Windows, Android).
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: "Expense Manager",
-  description: "Personal income, expense & investment dashboard",
+  description: "Personal income, expense & investment tracker",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070a14",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <body>
-        <div className="aurora" />
-        <div className="grid-overlay" />
         {children}
         <Toaster
           theme="dark"
           position="top-center"
+          offset={16}
           toastOptions={{
             style: {
-              background: "rgba(18,24,41,0.85)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              backdropFilter: "blur(12px)",
-              color: "#e7e9f3",
+              background: "#2c2c2e",
+              border: "none",
+              borderRadius: 14,
+              color: "#f5f5f7",
+              fontSize: 14,
             },
           }}
         />

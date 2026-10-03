@@ -1,57 +1,34 @@
 "use client";
 
-import { GlassCard } from "./GlassCard";
+import type { LucideIcon } from "lucide-react";
 import { CountUp } from "./CountUp";
 import { formatINR } from "@/lib/format";
-import { ReactNode } from "react";
 
 export function StatCard({
   label,
   value,
-  icon,
-  accent,
+  icon: Icon,
+  color,
   sub,
-  delay = 0,
-  signed = false,
   raw = false,
 }: {
   label: string;
   value: number;
-  icon: ReactNode;
-  accent: string;
+  icon: LucideIcon;
+  color: string;
   sub?: string;
-  delay?: number;
-  signed?: boolean;
   raw?: boolean;
 }) {
   return (
-    <GlassCard delay={delay} hover className="relative overflow-hidden p-5">
-      <div
-        className="absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-40"
-        style={{ background: accent }}
-      />
-      <div className="relative flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-white/55 sm:text-sm">{label}</p>
-          <p className="mt-2 text-[1.35rem] font-bold leading-tight tracking-tight tabular-nums sm:text-[1.7rem]">
-            <CountUp
-              value={value}
-              format={(n) =>
-                raw
-                  ? String(Math.round(n))
-                  : formatINR(n, { sign: signed && n > 0 })
-              }
-            />
-          </p>
-          {sub && <p className="mt-2 text-xs text-white/45">{sub}</p>}
-        </div>
-        <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-11 sm:w-11"
-          style={{ background: `${accent}22`, color: accent }}
-        >
-          {icon}
-        </div>
+    <div className="card flex min-w-0 flex-col p-4 sm:p-5">
+      <div className="flex items-center gap-1.5">
+        <Icon className="h-[15px] w-[15px] shrink-0" style={{ color }} strokeWidth={2.25} />
+        <span className="truncate text-[13px] font-medium text-label-2">{label}</span>
       </div>
-    </GlassCard>
+      <p className="tabular mt-2 truncate text-[22px] font-semibold leading-tight tracking-[-0.02em] sm:text-[28px]">
+        <CountUp value={value} format={(n) => (raw ? String(Math.round(n)) : formatINR(n))} />
+      </p>
+      {sub && <p className="mt-1 truncate text-[12px] text-label-3 sm:text-[13px]">{sub}</p>}
+    </div>
   );
 }

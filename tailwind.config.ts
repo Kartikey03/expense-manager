@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
 
+// Apple dark-mode palette: true black canvas, iOS system grays for surfaces,
+// and iOS dark "system colors" for data. No gradients anywhere.
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -9,53 +11,58 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"SF Pro Text"',
+          '"SF Pro Display"',
+          "var(--font-inter)",
+          '"Helvetica Neue"',
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
       },
       colors: {
-        ink: {
-          DEFAULT: "#0a0e1a",
-          soft: "#121829",
+        canvas: "#000000",
+        surface: {
+          DEFAULT: "#1c1c1e",
+          2: "#2c2c2e",
+          3: "#3a3a3c",
         },
-        glass: {
-          border: "rgba(255,255,255,0.12)",
-          fill: "rgba(255,255,255,0.06)",
+        label: {
+          DEFAULT: "#f5f5f7",
+          2: "#a1a1a6",
+          3: "#6e6e73",
         },
-        brand: {
-          50: "#eef2ff",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-        },
+        hairline: "rgba(255,255,255,0.08)",
         accent: {
-          teal: "#2dd4bf",
-          pink: "#f472b6",
-          amber: "#fbbf24",
-          green: "#34d399",
-          red: "#fb7185",
-          violet: "#a78bfa",
-          sky: "#38bdf8",
+          DEFAULT: "#0071e3",
+          hover: "#0077ed",
+          link: "#2997ff",
+        },
+        sys: {
+          blue: "#0a84ff",
+          green: "#30d158",
+          red: "#ff453a",
+          orange: "#ff9f0a",
+          yellow: "#ffd60a",
+          indigo: "#5e5ce6",
+          purple: "#bf5af2",
+          pink: "#ff375f",
+          teal: "#40c8e0",
+          cyan: "#64d2ff",
+          mint: "#63e6e2",
+          brown: "#ac8e68",
+          gray: "#8e8e93",
         },
       },
-      boxShadow: {
-        glass: "0 8px 32px 0 rgba(0,0,0,0.37)",
-        glow: "0 0 40px -10px rgba(99,102,241,0.55)",
+      borderRadius: {
+        tile: "18px",
       },
-      backdropBlur: {
-        xs: "2px",
-      },
-      keyframes: {
-        float: {
-          "0%,100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-18px)" },
-        },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
-      },
-      animation: {
-        float: "float 12s ease-in-out infinite",
-        shimmer: "shimmer 1.8s infinite",
+      transitionTimingFunction: {
+        // iOS sheet / spring-ish curve
+        ios: "cubic-bezier(0.32, 0.72, 0, 1)",
       },
     },
   },
