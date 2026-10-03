@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { NewTransaction, Transaction, TxnType } from "@/lib/types";
 import { CATEGORIES } from "@/lib/categories";
 import { todayISO } from "@/lib/format";
@@ -41,7 +41,6 @@ export function TransactionSheet({
   const [date, setDate] = useState(todayISO());
   const [category, setCategory] = useState(CATEGORIES.expense[0]);
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState<null | "save" | "delete">(null);
   const amountRef = useRef<HTMLInputElement>(null);
 
   // Reset only when the sheet opens, so the form doesn't flash while closing.
@@ -62,7 +61,6 @@ export function TransactionSheet({
       setCategory(CATEGORIES.expense[0]);
       setNote("");
     }
-    setBusy(null);
     // Focus after the open transition starts (desktop keyboards benefit most).
     const t = window.setTimeout(() => amountRef.current?.focus({ preventScroll: true }), 260);
     return () => window.clearTimeout(t);
@@ -76,9 +74,11 @@ export function TransactionSheet({
   const parsed = parseFloat(amount);
   const valid = Number.isFinite(parsed) && parsed > 0 && !!date;
 
-  async function save(e: React.FormEvent) {
+  // Writes are optimistic (see TransactionsProvider): the list updates and the
+  // sheet closes immediately; failures roll back with a Retry toast.
+  function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid || busy) return;
+    if (!valid) return;
     const signed = type === "investment" && direction === "withdraw" ? -parsed : parsed;
     const payload: NewTransaction = {
       type,
@@ -88,25 +88,15 @@ export function TransactionSheet({
       category,
       source: type === "expense" ? null : category,
     };
-    setBusy("save");
-    try {
-      if (editing) await updateTxn(editing.id, payload);
-      else await addTxn(payload);
-      onClose();
-    } catch {
-      setBusy(null); // error toast shown by provider; keep the form open
-    }
+    if (editing) updateTxn(editing.id, payload);
+    else addTxn(payload);
+    onClose();
   }
 
-  async function remove() {
-    if (!editing || busy) return;
-    setBusy("delete");
-    try {
-      await deleteTxn(editing.id);
-      onClose();
-    } catch {
-      setBusy(null);
-    }
+  function remove() {
+    if (!editing) return;
+    deleteTxn(editing.id);
+    onClose();
   }
 
   return (
@@ -186,8 +176,8 @@ export function TransactionSheet({
 
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:items-center">
           {editing && (
-            <button type="button" onClick={remove} disabled={!!busy} className="btn-danger btn-lg sm:mr-auto sm:h-9 sm:rounded-full sm:text-[14px]">
-              {busy === "delete" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            <button type="button" onClick={remove} className="btn-danger btn-lg sm:mr-auto sm:h-9 sm:rounded-full sm:text-[14px]">
+              <Trash2 className="h-4 w-4" />
               Delete
             </button>
           )}
@@ -198,8 +188,7 @@ export function TransactionSheet({
           >
             Cancel
           </button>
-          <button type="submit" disabled={!valid || !!busy} className="btn-primary btn-lg sm:h-9 sm:rounded-full sm:text-[14px]">
-            {busy === "save" && <Loader2 className="h-4 w-4 animate-spin" />}
+          <button type="submit" disabled={!valid} className="btn-primary btn-lg sm:h-9 sm:rounded-full sm:text-[14px]">
             {editing ? "Save" : "Add"}
           </button>
         </div>
